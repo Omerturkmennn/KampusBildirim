@@ -8,7 +8,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.example.kampusbildirim.databinding.ActivityMainBinding
-import com.google.firebase.auth.FirebaseAuth // <-- Bu import önemli
+import com.google.firebase.auth.FirebaseAuth
 
 class MainActivity : AppCompatActivity() {
 
@@ -44,10 +44,13 @@ class MainActivity : AppCompatActivity() {
                 // Firebase ile giriş yapmayı dene
                 auth.signInWithEmailAndPassword(email, password)
                     .addOnSuccessListener {
-                        // Giriş Başarılı
+                        // Giriş Başarılı mesaj
                         Toast.makeText(this, "Giriş Başarılı!", Toast.LENGTH_SHORT).show()
 
-
+                        //Ana Sayfaya Yönlendirme
+                        val intent= Intent(this, HomeActivity::class.java)
+                        startActivity(intent)
+                        finish() //geri tusuna basınca tekrar login ekranına dönmemesini sağlar
                     }
                     .addOnFailureListener { exception ->
                         // Hata bildirimi

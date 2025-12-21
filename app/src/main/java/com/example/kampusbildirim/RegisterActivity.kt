@@ -1,5 +1,6 @@
 package com.example.kampusbildirim
 
+import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -55,7 +56,10 @@ class RegisterActivity : AppCompatActivity() {
                                 .set(userInfo)
                                 .addOnSuccessListener {
                                     Toast.makeText(this, "Kayıt Başarılı!", Toast.LENGTH_SHORT).show()
-                                    finish() // Sayfayı kapat, girişe dön
+                                    //Anasayfaya yönlendirme
+                                    val intent= Intent(this, HomeActivity::class.java)
+                                    startActivity(intent)
+                                    finish() //
                                 }
                                 .addOnFailureListener {
                                     Toast.makeText(this, "Veritabanı hatası: ${it.localizedMessage}", Toast.LENGTH_LONG).show()
