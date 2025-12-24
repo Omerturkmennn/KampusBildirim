@@ -3,6 +3,7 @@ package com.example.kampusbildirim
 import android.Manifest
 import android.app.Activity
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.os.Bundle
 import android.provider.MediaStore
@@ -12,7 +13,10 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.ContextCompat
 import com.example.kampusbildirim.databinding.FragmentAddReportBinding
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
@@ -28,6 +32,9 @@ class AddReportFragment : Fragment() {
     private var _binding: FragmentAddReportBinding? = null
     private val binding get() = _binding!!
     private var selectedBitmap: Bitmap? = null //Çekilen foto burda tutulacak
+
+    //Konum Servisi
+    private lateinit var fusedLocationClient: FusedLocationProviderClient
 
     //Kamera açılır, fotoğraf çekilir, küçük boyutlu bitmap alınır ve imageView da gösterilir
     private val cameraLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
@@ -48,6 +55,17 @@ class AddReportFragment : Fragment() {
         }
     }
 
+    //Konum İzni İsteyici
+    private val locationPermissionLauncher = registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
+        if (isGranted) {
+            // İzin verildiyse konumu al ve işlemi devam ettir
+            getLocationAndSubmit()
+        } else {
+            Toast.makeText(requireContext(), "Konum izni olmadan rapor gönderilemez.", Toast.LENGTH_SHORT).show()
+            binding.progressBar.visibility = View.GONE
+            binding.btnSubmitReport.isEnabled = true
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -65,6 +83,9 @@ class AddReportFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+       //Konum servisini başlat
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity())
+
         binding.btnCapturePhoto.setOnClickListener {
             permissionLauncher.launch(Manifest.permission.CAMERA)
         }
@@ -79,17 +100,47 @@ class AddReportFragment : Fragment() {
                 Toast.makeText(requireContext(), "Lütfen açıklama yazın.", Toast.LENGTH_SHORT).show()
             } else {
                 // Her sey hazır yüklemeyi baslat
-                uploadImageAndSaveReport(selectedBitmap!!, description)
+                if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+                    getLocationAndSubmit()
+                } else {
+                    locationPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+                }
             }
         }
 
     }
 
-    // FOTOĞRAFI YÜKLEME FONKSİYONU
-    private fun uploadImageAndSaveReport(bitmap: Bitmap, description: String) {
-        //Yükleniyor çubuğunu göster, butonu kilitle
+    //Konumu Alıp Fonksiyonları Tetikleyen Ara Fonksiyon
+    private fun getLocationAndSubmit() {
+        // Yükleniyor...
         binding.progressBar.visibility = View.VISIBLE
         binding.btnSubmitReport.isEnabled = false
+
+        try {
+            fusedLocationClient.lastLocation.addOnSuccessListener { location ->
+                val description = binding.etDescription.text.toString()
+                if (location != null) {
+                    // Konum var, koordinatları yolla
+                    uploadImageAndSaveReport(selectedBitmap!!, description, location.latitude, location.longitude)
+                } else {
+                    // Konum alınamadı (GPS kapalı olabilir), 0.0, 0.0 olarak yolla
+                    Toast.makeText(requireContext(), "Konum alınamadı, konumsuz gönderiliyor.", Toast.LENGTH_SHORT).show()
+                    uploadImageAndSaveReport(selectedBitmap!!, description, 0.0, 0.0)
+                }
+            }.addOnFailureListener {
+                Toast.makeText(requireContext(), "Konum hatası: ${it.message}", Toast.LENGTH_SHORT).show()
+                // Hata olsa da gönder
+                uploadImageAndSaveReport(selectedBitmap!!, binding.etDescription.text.toString(), 0.0, 0.0)
+            }
+        } catch (e: SecurityException) {
+            Toast.makeText(requireContext(), "İzin hatası!", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    // FOTOĞRAFI YÜKLEME FONKSİYONU
+    // FOTOĞRAFI YÜKLEME FONKSİYONU (Güncellendi: latitude ve longitude eklendi)
+    private fun uploadImageAndSaveReport(bitmap: Bitmap, description: String, latitude: Double, longitude: Double) {
+        // (Buradaki progressBar kodunu sildim çünkü getLocationAndSubmit içinde zaten açtık)
 
         //Resim ismini rastgele oluştur,format abcd52163.jpg şeklinde olcak
         val fileName = "images/${UUID.randomUUID()}.jpg"
@@ -107,7 +158,7 @@ class AddReportFragment : Fragment() {
                 storageRef.downloadUrl.addOnSuccessListener { uri ->
                     val downloadUrl = uri.toString()
                     //Linki aldık
-                    saveToFirestore(description, downloadUrl)
+                    saveToFirestore(description, downloadUrl, latitude, longitude)
                 }
             }
             .addOnFailureListener { e ->
@@ -119,7 +170,7 @@ class AddReportFragment : Fragment() {
     }
 
     //VERİTABANINA KAYDETME FONKSİYONU
-    private fun saveToFirestore(description: String, imageUrl: String) {
+    private fun saveToFirestore(description: String, imageUrl: String,latitude: Double,longitude: Double) {
         val userEmail = auth.currentUser?.email ?: "Anonim"
         val userId = auth.currentUser?.uid ?: ""
 
@@ -129,7 +180,9 @@ class AddReportFragment : Fragment() {
             "imageUrl" to imageUrl,
             "userEmail" to userEmail,
             "userId" to userId,
-            "timestamp" to com.google.firebase.Timestamp.now() // Şu anki zaman
+            "timestamp" to com.google.firebase.Timestamp.now(), // Şu anki zaman
+            "latitude" to latitude,  
+            "longitude" to longitude
         )
 
         // reports adlı collectiona ekle

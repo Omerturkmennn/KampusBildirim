@@ -7,6 +7,10 @@ data class Report(
     val imageUrl: String = "",
     val userEmail: String = "",
     val userId: String = "",
-    val timestamp: Timestamp? = null
+    val timestamp: Timestamp? = null,
+
+    //Konum Bilgileri
+    val latitude: Double? = 0.0,
+    val longitude: Double? = 0.0
 
 )
