@@ -1,34 +1,57 @@
 <?xml version="1.0" encoding="utf-8"?>
-<navigation
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph"
-    app:startDestination="@id/homeFragment">>
+    app:startDestination="@id/loginFragment"> <fragment
+    android:id="@+id/loginFragment"
+    android:name="com.example.kampusbildirim.LoginFragment"
+    android:label="Giriş Yap"
+    tools:layout="@layout/fragment_login">
+    <action
+        android:id="@+id/action_loginFragment_to_homeFragment"
+        app:destination="@id/homeFragment"
+        app:popUpTo="@id/loginFragment"
+        app:popUpToInclusive="true" />
+    <action
+        android:id="@+id/action_loginFragment_to_registerFragment"
+        app:destination="@id/registerFragment" />
+</fragment>
+
+    <fragment
+        android:id="@+id/registerFragment"
+        android:name="com.example.kampusbildirim.RegisterFragment"
+        android:label="Kayıt Ol"
+        tools:layout="@layout/fragment_register">
+        <action
+            android:id="@+id/action_registerFragment_to_homeFragment"
+            app:destination="@id/homeFragment"
+            app:popUpTo="@id/loginFragment"
+            app:popUpToInclusive="true" />
+    </fragment>
 
     <fragment
         android:id="@+id/homeFragment"
         android:name="com.example.kampusbildirim.HomeFragment"
-        android:label="fragment_home"
+        android:label="Ana Sayfa"
         tools:layout="@layout/fragment_home" />
 
     <fragment
         android:id="@+id/mapFragment"
         android:name="com.example.kampusbildirim.MapFragment"
-        android:label="fragment_map"
+        android:label="Harita"
         tools:layout="@layout/fragment_map" />
 
     <fragment
         android:id="@+id/addReportFragment"
         android:name="com.example.kampusbildirim.AddReportFragment"
-        android:label="fragment_add_report"
+        android:label="Ekle"
         tools:layout="@layout/fragment_add_report" />
 
     <fragment
         android:id="@+id/profileFragment"
         android:name="com.example.kampusbildirim.ProfileFragment"
-        android:label="fragment_profile"
+        android:label="Profil"
         tools:layout="@layout/fragment_profile" />
 
 </navigation>
