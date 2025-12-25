@@ -28,7 +28,7 @@ class LoginFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         auth = FirebaseAuth.getInstance()
 
-        // Zaten giriş yapmışsa direkt ana sayfaya at
+        //Zaten giriş yapmışsa direkt ana sayfaya at
         if (auth.currentUser != null) {
             findNavController().navigate(R.id.action_loginFragment_to_homeFragment)
         }

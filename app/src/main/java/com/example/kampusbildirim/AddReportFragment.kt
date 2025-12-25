@@ -120,16 +120,16 @@ class AddReportFragment : Fragment() {
             fusedLocationClient.lastLocation.addOnSuccessListener { location ->
                 val description = binding.etDescription.text.toString()
                 if (location != null) {
-                    // Konum var, koordinatları yolla
+                    //Konum var, koordinatları yolla
                     uploadImageAndSaveReport(selectedBitmap!!, description, location.latitude, location.longitude)
                 } else {
-                    // Konum alınamadı (GPS kapalı olabilir), 0.0, 0.0 olarak yolla
+                    //Konum alınamadı (GPS kapalı olabilir), 0.0, 0.0 olarak yolla
                     Toast.makeText(requireContext(), "Konum alınamadı, konumsuz gönderiliyor.", Toast.LENGTH_SHORT).show()
                     uploadImageAndSaveReport(selectedBitmap!!, description, 0.0, 0.0)
                 }
             }.addOnFailureListener {
                 Toast.makeText(requireContext(), "Konum hatası: ${it.message}", Toast.LENGTH_SHORT).show()
-                // Hata olsa da gönder
+                //Hata olsa da gönder
                 uploadImageAndSaveReport(selectedBitmap!!, binding.etDescription.text.toString(), 0.0, 0.0)
             }
         } catch (e: SecurityException) {
@@ -140,7 +140,7 @@ class AddReportFragment : Fragment() {
     // FOTOĞRAFI YÜKLEME FONKSİYONU
     // FOTOĞRAFI YÜKLEME FONKSİYONU (Güncellendi: latitude ve longitude eklendi)
     private fun uploadImageAndSaveReport(bitmap: Bitmap, description: String, latitude: Double, longitude: Double) {
-        // (Buradaki progressBar kodunu sildim çünkü getLocationAndSubmit içinde zaten açtık)
+
 
         //Resim ismini rastgele oluştur,format abcd52163.jpg şeklinde olcak
         val fileName = "images/${UUID.randomUUID()}.jpg"
@@ -194,7 +194,7 @@ class AddReportFragment : Fragment() {
                 binding.btnSubmitReport.isEnabled = true
                 Toast.makeText(requireContext(), "Bildirim başarıyla gönderildi!", Toast.LENGTH_LONG).show()
 
-                // Alanları temizle
+                //Alanları temizle
                 binding.etDescription.setText("")
                 binding.imageViewReport.setImageResource(android.R.drawable.ic_menu_camera)
                 selectedBitmap = null

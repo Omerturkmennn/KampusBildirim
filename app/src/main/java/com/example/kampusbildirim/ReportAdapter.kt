@@ -8,7 +8,10 @@ import com.example.kampusbildirim.databinding.ItemReportBinding
 import java.text.SimpleDateFormat
 import java.util.Locale
 
-class ReportAdapter(private val reportList: ArrayList<Report>) : RecyclerView.Adapter<ReportAdapter.ReportViewHolder>() {
+class ReportAdapter(
+    private val reportList: ArrayList<Report>,
+    private val onItemClick: (Report) -> Unit // Tıklama fonksiyonu
+) : RecyclerView.Adapter<ReportAdapter.ReportViewHolder>() {
 
     class ReportViewHolder(val binding: ItemReportBinding) : RecyclerView.ViewHolder(binding.root)
 
@@ -39,5 +42,10 @@ class ReportAdapter(private val reportList: ArrayList<Report>) : RecyclerView.Ad
             .load(currentReport.imageUrl)
             .centerCrop()
             .into(holder.binding.imgRaporGorseli)
+
+        //Kullanıcı listedeki kutuya tıkladığında bu çalışacak
+        holder.itemView.setOnClickListener {
+            onItemClick(currentReport) // Tıklanan raporu HomeFragmenta postala
+        }
     }
 }

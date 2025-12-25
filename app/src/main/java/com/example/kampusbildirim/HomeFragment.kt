@@ -6,6 +6,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.kampusbildirim.databinding.FragmentHomeBinding
 import com.google.firebase.Firebase
@@ -40,7 +41,21 @@ class HomeFragment : Fragment() {
 
         //RecyclerView ile oluşturulan listeyi kur
         binding.recyclerViewReports.layoutManager = LinearLayoutManager(requireContext())
-        reportAdapter = ReportAdapter(reportList)
+
+        // Adapter'ı başlatırken artık ikinci parametre (Tıklama Olayı) veriyoruz
+        reportAdapter = ReportAdapter(reportList) { clickedReport ->
+
+            //Tıklanan raporun bilgilerini bir Çantaya (Bundle) koyuyoruz
+            val bundle = Bundle()
+            bundle.putString("gonderilenResim", clickedReport.imageUrl)
+            bundle.putString("gonderilenAciklama", clickedReport.description)
+            bundle.putDouble("gonderilenLat", clickedReport.latitude ?: 0.0)
+            bundle.putDouble("gonderilenLng", clickedReport.longitude ?: 0.0)
+
+            //Çantayı alıp Detay Sayfasına gidiyoruz
+            //(nav_graph.xml'de oluşturduğumuz action ID'sini kullanıyoruz)
+            findNavController().navigate(R.id.action_homeFragment_to_reportDetailFragment, bundle)
+        }
         binding.recyclerViewReports.adapter = reportAdapter
         fetchReports() //Verileri getir
 

@@ -68,4 +68,6 @@ dependencies {
     implementation("androidx.fragment:fragment-ktx:1.8.5")
     implementation("androidx.navigation:navigation-fragment-ktx:2.8.5")
     implementation("androidx.navigation:navigation-ui-ktx:2.8.5")
+
+    implementation("com.squareup.picasso:picasso:2.8")
 }
