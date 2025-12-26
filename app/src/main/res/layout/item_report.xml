@@ -28,6 +28,26 @@
             android:padding="12dp">
 
             <TextView
+                android:id="@+id/tvBaslik"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Rapor Başlığı"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:textColor="#000000" />
+
+            <TextView
+                android:id="@+id/tvTur"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Kategori"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:textColor="#1976D2"
+                android:layout_marginTop="4dp"
+                android:layout_marginBottom="8dp"/>
+
+            <TextView
                 android:id="@+id/tvAciklama"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

@@ -26,6 +26,7 @@ class ReportDetailFragment : Fragment(), OnMapReadyCallback {
     private var gelenLat = 0.0
     private var gelenLng = 0.0
     private var gelenAciklama = ""
+    private var gelenBaslik=""
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -41,11 +42,15 @@ class ReportDetailFragment : Fragment(), OnMapReadyCallback {
         //PAKETİ AÇ (Argumentstan verileri al)
         arguments?.let { bundle ->
             val gelenResimUrl = bundle.getString("gonderilenResim")
+            gelenBaslik = bundle.getString("gonderilenBaslik") ?: "Başlık Yok"
+            val gelenTur = bundle.getString("gonderilenTur") ?: "Genel"
             gelenAciklama = bundle.getString("gonderilenAciklama") ?: "Açıklama yok"
             gelenLat = bundle.getDouble("gonderilenLat")
             gelenLng = bundle.getDouble("gonderilenLng")
 
             //VERİLERİ EKRANA YERLEŞTİR
+            binding.tvDetailTitle.text = gelenBaslik
+            binding.tvDetailType.text = gelenTur
             binding.tvDetailDescription.text = gelenAciklama
 
             //Resmi Glide ile yükle

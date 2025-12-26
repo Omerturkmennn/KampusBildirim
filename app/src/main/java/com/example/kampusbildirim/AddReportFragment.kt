@@ -11,6 +11,7 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
@@ -42,7 +43,7 @@ class AddReportFragment : Fragment() {
             val imageBitmap = result.data?.extras?.get("data") as? Bitmap //fotoğraf alınır
             if (imageBitmap != null) {
                 selectedBitmap = imageBitmap
-                binding.imageViewReport.setImageBitmap(imageBitmap)
+                binding.imgSelected.setImageBitmap(imageBitmap)
             }
         }
     }
@@ -62,8 +63,8 @@ class AddReportFragment : Fragment() {
             getLocationAndSubmit()
         } else {
             Toast.makeText(requireContext(), "Konum izni olmadan rapor gönderilemez.", Toast.LENGTH_SHORT).show()
-            binding.progressBar.visibility = View.GONE
-            binding.btnSubmitReport.isEnabled = true
+
+            binding.btnSubmit.isEnabled = true
         }
     }
 
@@ -83,54 +84,78 @@ class AddReportFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-       //Konum servisini başlat
+
+        //Konum servisini başlat
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(requireActivity())
 
-        binding.btnCapturePhoto.setOnClickListener {
+        //Spinneri doldur
+        val reportTypes = arrayOf("Arıza", "Şikayet", "İstek", "Öneri", "Acil Durum")
+        val spinnerAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_dropdown_item, reportTypes)
+        binding.spinnerType.adapter = spinnerAdapter
+
+        binding.btnSelectImage.setOnClickListener {
             permissionLauncher.launch(Manifest.permission.CAMERA)
         }
 
         //Kameraya tıklanınca izin ister
-        binding.btnSubmitReport.setOnClickListener {
-            val description = binding.etDescription.text.toString()
+        binding.btnSubmit.setOnClickListener {
+            // Başlık ve Açıklama kontrolü
+            val title = binding.etReportTitle.text.toString().trim()
+            val description = binding.etDescription.text.toString().trim()
 
+            if (title.isEmpty()) {
+                binding.tilReportTitle.error = "Başlık giriniz"
+                return@setOnClickListener
+            }
+            if (description.isEmpty()) {
+                binding.tilDescription.error = "Açıklama giriniz"
+                return@setOnClickListener
+            }
+            // Fotoğraf zorunlu olsun mu? Senin eski kodunda zorunluydu, aynen bıraktım.
             if (selectedBitmap == null) {
-                Toast.makeText(requireContext(), "Lütfen fotoğraf çekin!", Toast.LENGTH_SHORT).show()
-            } else if (description.isEmpty()) {
-                Toast.makeText(requireContext(), "Lütfen açıklama yazın.", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), "Lütfen fotoğraf çekin!", Toast.LENGTH_SHORT)
+                    .show()
+                return@setOnClickListener
+            }
+
+            // Her şey tamamsa konumu alıp yüklemeye başla
+            if (ContextCompat.checkSelfPermission(
+                    requireContext(),
+                    Manifest.permission.ACCESS_FINE_LOCATION
+                ) == PackageManager.PERMISSION_GRANTED
+            ) {
+                getLocationAndSubmit()
             } else {
-                // Her sey hazır yüklemeyi baslat
-                if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-                    getLocationAndSubmit()
-                } else {
-                    locationPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
-                }
+                locationPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
             }
         }
-
     }
 
     //Konumu Alıp Fonksiyonları Tetikleyen Ara Fonksiyon
     private fun getLocationAndSubmit() {
-        // Yükleniyor...
-        binding.progressBar.visibility = View.VISIBLE
-        binding.btnSubmitReport.isEnabled = false
+        binding.btnSubmit.text = "YÜKLENİYOR..."
+        binding.btnSubmit.isEnabled = false
 
         try {
             fusedLocationClient.lastLocation.addOnSuccessListener { location ->
-                val description = binding.etDescription.text.toString()
+                // YENİ: Başlık ve Tür bilgilerini de alıyoruz
+                val title = binding.etReportTitle.text.toString().trim()
+                val description = binding.etDescription.text.toString().trim()
+                val type = binding.spinnerType.selectedItem.toString() // YENİ: Seçilen Tür
+
                 if (location != null) {
-                    //Konum var, koordinatları yolla
-                    uploadImageAndSaveReport(selectedBitmap!!, description, location.latitude, location.longitude)
+                    uploadImageAndSaveReport(selectedBitmap!!, title, description, type, location.latitude, location.longitude)
                 } else {
-                    //Konum alınamadı (GPS kapalı olabilir), 0.0, 0.0 olarak yolla
-                    Toast.makeText(requireContext(), "Konum alınamadı, konumsuz gönderiliyor.", Toast.LENGTH_SHORT).show()
-                    uploadImageAndSaveReport(selectedBitmap!!, description, 0.0, 0.0)
+                    Toast.makeText(requireContext(), "Konum alınamadı, 0.0 kullanılıyor.", Toast.LENGTH_SHORT).show()
+                    uploadImageAndSaveReport(selectedBitmap!!, title, description, type, 0.0, 0.0)
                 }
             }.addOnFailureListener {
-                Toast.makeText(requireContext(), "Konum hatası: ${it.message}", Toast.LENGTH_SHORT).show()
-                //Hata olsa da gönder
-                uploadImageAndSaveReport(selectedBitmap!!, binding.etDescription.text.toString(), 0.0, 0.0)
+                // Hata durumu
+                val title = binding.etReportTitle.text.toString().trim()
+                val description = binding.etDescription.text.toString().trim()
+                val type = binding.spinnerType.selectedItem.toString()
+
+                uploadImageAndSaveReport(selectedBitmap!!, title, description, type, 0.0, 0.0)
             }
         } catch (e: SecurityException) {
             Toast.makeText(requireContext(), "İzin hatası!", Toast.LENGTH_SHORT).show()
@@ -139,7 +164,7 @@ class AddReportFragment : Fragment() {
 
     // FOTOĞRAFI YÜKLEME FONKSİYONU
     // FOTOĞRAFI YÜKLEME FONKSİYONU (Güncellendi: latitude ve longitude eklendi)
-    private fun uploadImageAndSaveReport(bitmap: Bitmap, description: String, latitude: Double, longitude: Double) {
+    private fun uploadImageAndSaveReport(bitmap: Bitmap, title: String, description: String, type: String, latitude: Double, longitude: Double) {
 
 
         //Resim ismini rastgele oluştur,format abcd52163.jpg şeklinde olcak
@@ -158,31 +183,34 @@ class AddReportFragment : Fragment() {
                 storageRef.downloadUrl.addOnSuccessListener { uri ->
                     val downloadUrl = uri.toString()
                     //Linki aldık
-                    saveToFirestore(description, downloadUrl, latitude, longitude)
+                    saveToFirestore(title, description, type, downloadUrl, latitude, longitude)
                 }
             }
             .addOnFailureListener { e ->
                 // Hata olursa
-                binding.progressBar.visibility = View.GONE
-                binding.btnSubmitReport.isEnabled = true
+
+                binding.btnSubmit.isEnabled = true
                 Toast.makeText(requireContext(), "Resim yüklenemedi: ${e.message}", Toast.LENGTH_SHORT).show()
             }
     }
 
     //VERİTABANINA KAYDETME FONKSİYONU
-    private fun saveToFirestore(description: String, imageUrl: String,latitude: Double,longitude: Double) {
+    private fun saveToFirestore(title:String,description: String,type: String, imageUrl: String,latitude: Double,longitude: Double) {
         val userEmail = auth.currentUser?.email ?: "Anonim"
         val userId = auth.currentUser?.uid ?: ""
 
         // Kaydedilecek veri paketi
         val reportMap = hashMapOf(
+            "title" to title,
+            "type" to type,
+            "status" to "Açık",
             "description" to description,
             "imageUrl" to imageUrl,
             "userEmail" to userEmail,
             "userId" to userId,
-            "timestamp" to com.google.firebase.Timestamp.now(), // Şu anki zaman
-            "latitude" to latitude,  
-            "longitude" to longitude
+            "timestamp" to com.google.firebase.Timestamp.now(), //Şu anki zaman
+            "latitude" to latitude,
+            "longitude" to longitude,
         )
 
         // reports adlı collectiona ekle
@@ -190,19 +218,22 @@ class AddReportFragment : Fragment() {
             .add(reportMap)
             .addOnSuccessListener {
                 //BAŞARILI
-                binding.progressBar.visibility = View.GONE
-                binding.btnSubmitReport.isEnabled = true
+
+                binding.btnSubmit.isEnabled = true
+                binding.btnSubmit.text = "BİLDİRİMİ GÖNDER"
                 Toast.makeText(requireContext(), "Bildirim başarıyla gönderildi!", Toast.LENGTH_LONG).show()
 
                 //Alanları temizle
+                binding.etReportTitle.setText("")
                 binding.etDescription.setText("")
-                binding.imageViewReport.setImageResource(android.R.drawable.ic_menu_camera)
+                binding.imgSelected.setImageResource(android.R.drawable.ic_menu_camera) // imageViewReport -> imgSelected
                 selectedBitmap = null
             }
             //Gönderim başarısız olursa
             .addOnFailureListener { e ->
-                binding.progressBar.visibility = View.GONE
-                binding.btnSubmitReport.isEnabled = true
+
+                binding.btnSubmit.text = "BİLDİRİMİ GÖNDER"
+                binding.btnSubmit.isEnabled = true
                 Toast.makeText(requireContext(), "Hata: ${e.message}", Toast.LENGTH_SHORT).show()
             }
     }

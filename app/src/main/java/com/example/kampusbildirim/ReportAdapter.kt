@@ -27,6 +27,9 @@ class ReportAdapter(
     override fun onBindViewHolder(holder: ReportViewHolder, position: Int) {
         val currentReport = reportList[position]
 
+        holder.binding.tvBaslik.text = currentReport.title
+        holder.binding.tvTur.text = currentReport.type
+
         //Açıklamayı yaz
         holder.binding.tvAciklama.text = currentReport.description
 

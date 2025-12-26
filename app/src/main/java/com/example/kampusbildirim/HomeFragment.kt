@@ -42,18 +42,20 @@ class HomeFragment : Fragment() {
         //RecyclerView ile oluşturulan listeyi kur
         binding.recyclerViewReports.layoutManager = LinearLayoutManager(requireContext())
 
-        // Adapter'ı başlatırken artık ikinci parametre (Tıklama Olayı) veriyoruz
+        //Adapterı başlatırken artık ikinci parametre (Tıklama Olayı) veriyoruz
         reportAdapter = ReportAdapter(reportList) { clickedReport ->
 
-            //Tıklanan raporun bilgilerini bir Çantaya (Bundle) koyuyoruz
+            //Tıklanan raporun bilgilerini Bundle içine koyuyoruz
             val bundle = Bundle()
+            bundle.putString("gonderilenBaslik", clickedReport.title)
+            bundle.putString("gonderilenTur", clickedReport.type)
             bundle.putString("gonderilenResim", clickedReport.imageUrl)
             bundle.putString("gonderilenAciklama", clickedReport.description)
             bundle.putDouble("gonderilenLat", clickedReport.latitude ?: 0.0)
             bundle.putDouble("gonderilenLng", clickedReport.longitude ?: 0.0)
 
             //Çantayı alıp Detay Sayfasına gidiyoruz
-            //(nav_graph.xml'de oluşturduğumuz action ID'sini kullanıyoruz)
+            //(nav_graph.xmlde oluşturulanm action ID'sini kullanıyoruz)
             findNavController().navigate(R.id.action_homeFragment_to_reportDetailFragment, bundle)
         }
         binding.recyclerViewReports.adapter = reportAdapter

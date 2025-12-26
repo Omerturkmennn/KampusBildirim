@@ -22,17 +22,46 @@
             app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
-            android:id="@+id/tvLabelDesc"
-            android:layout_width="wrap_content"
+            android:id="@+id/tvDetailTitle"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
             android:layout_marginTop="16dp"
+            android:layout_marginEnd="16dp"
+            android:text="Rapor Başlığı"
+            android:textColor="#000000"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/ivDetailImage" />
+
+        <TextView
+            android:id="@+id/tvDetailType"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:background="#E3F2FD"
+            android:paddingHorizontal="12dp"
+            android:paddingVertical="4dp"
+            android:text="Kategori"
+            android:textColor="#1565C0"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="@id/tvDetailTitle"
+            app:layout_constraintTop_toBottomOf="@id/tvDetailTitle" />
+
+        <TextView
+            android:id="@+id/tvLabelDesc"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
             android:text="Açıklama"
             android:textColor="#000000"
             android:textSize="18sp"
             android:textStyle="bold"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/ivDetailImage" />
+            app:layout_constraintStart_toStartOf="@id/tvDetailTitle"
+            app:layout_constraintTop_toBottomOf="@id/tvDetailType" />
 
         <TextView
             android:id="@+id/tvDetailDescription"
@@ -40,32 +69,25 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
             android:layout_marginEnd="16dp"
-            android:text="Rapor açıklaması buraya gelecek..."
+            android:text="Rapor açıklaması buraya yazılacak..."
             android:textSize="16sp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="@id/tvLabelDesc"
             app:layout_constraintTop_toBottomOf="@id/tvLabelDesc" />
 
-        <View
-            android:id="@+id/divider"
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:layout_marginHorizontal="16dp"
-            android:layout_marginTop="16dp"
-            android:background="#E0E0E0"
-            app:layout_constraintTop_toBottomOf="@id/tvDetailDescription" />
+
 
         <TextView
             android:id="@+id/tvLabelLoc"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
+            android:layout_marginTop="24dp"
             android:text="Konum"
             android:textColor="#000000"
             android:textSize="18sp"
             android:textStyle="bold"
             app:layout_constraintStart_toStartOf="@id/tvLabelDesc"
-            app:layout_constraintTop_toBottomOf="@id/divider" />
+            app:layout_constraintTop_toBottomOf="@id/tvDetailDescription" />
 
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
