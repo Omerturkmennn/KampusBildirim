@@ -1,5 +1,6 @@
 package com.example.kampusbildirim
 
+import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
@@ -29,6 +30,19 @@ class ReportAdapter(
 
         holder.binding.tvBaslik.text = currentReport.title
         holder.binding.tvTur.text = currentReport.type
+
+        //RENKLENDİRMNE
+        //Gelen türe göre bir renk kodu belirler
+        val colorCode = when (currentReport.type) {
+            "Arıza" -> "#D32F2F"       // Kırmızı
+            "Şikayet" -> "#F57C00"     // Turuncu
+            "İstek" -> "#1976D2"       // Mavi
+            "Öneri" -> "#388E3C"       // Yeşil
+            "Acil Durum" -> "#B71C1C"  // Koyu Kırmızı
+            else -> "#757575"          // Varsayılan Gri
+        }
+        // Belirlenen rengi yazıya uygula
+        holder.binding.tvTur.setTextColor(Color.parseColor(colorCode))
 
         //Açıklamayı yaz
         holder.binding.tvAciklama.text = currentReport.description
