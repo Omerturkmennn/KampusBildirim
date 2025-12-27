@@ -11,6 +11,7 @@ import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
 
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
@@ -27,6 +28,7 @@ class ReportDetailFragment : Fragment(), OnMapReadyCallback {
     private var gelenLng = 0.0
     private var gelenAciklama = ""
     private var gelenBaslik=""
+    private var gelenTur = ""
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -43,7 +45,7 @@ class ReportDetailFragment : Fragment(), OnMapReadyCallback {
         arguments?.let { bundle ->
             val gelenResimUrl = bundle.getString("gonderilenResim")
             gelenBaslik = bundle.getString("gonderilenBaslik") ?: "Başlık Yok"
-            val gelenTur = bundle.getString("gonderilenTur") ?: "Genel"
+            gelenTur = bundle.getString("gonderilenTur") ?: "Genel"
             gelenAciklama = bundle.getString("gonderilenAciklama") ?: "Açıklama yok"
             gelenLat = bundle.getDouble("gonderilenLat")
             gelenLng = bundle.getDouble("gonderilenLng")
@@ -75,8 +77,23 @@ class ReportDetailFragment : Fragment(), OnMapReadyCallback {
         if (gelenLat != 0.0 && gelenLng != 0.0) {
             val location = LatLng(gelenLat, gelenLng)
 
-            // ,Kırmızı iğneyi dik
-            mMap.addMarker(MarkerOptions().position(location).title(gelenAciklama))
+            // --- RENK AYARLAMA  ---
+            val markerColor = when (gelenTur) {
+                "Arıza" -> BitmapDescriptorFactory.HUE_RED      // Kırmızı
+                "Şikayet" -> BitmapDescriptorFactory.HUE_ORANGE // Turuncu
+                "İstek" -> BitmapDescriptorFactory.HUE_BLUE     // Mavi
+                "Öneri" -> BitmapDescriptorFactory.HUE_GREEN    // Yeşil
+                "Acil Durum" -> BitmapDescriptorFactory.HUE_VIOLET // Mor
+                else -> BitmapDescriptorFactory.HUE_AZURE       // Varsayılan
+            }
+
+            // İğneyi dik (Renkli olarak)
+            mMap.addMarker(
+                MarkerOptions()
+                    .position(location)
+                    .title(gelenAciklama)
+                    .icon(BitmapDescriptorFactory.defaultMarker(markerColor)) //Renk burada atanıyor
+            )
 
             //Kamerayı oraya odakla (Zoom seviyesi: 15)
             mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(location, 15f))

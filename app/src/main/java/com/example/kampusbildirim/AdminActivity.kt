@@ -4,6 +4,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.kampusbildirim.databinding.ActivityAdminBinding
@@ -31,6 +32,11 @@ class AdminActivity: AppCompatActivity() {
         //Verileri getir
         fetchReports("Tümü")
 
+        // ACİL DURUM DUYURUSU BUTONU
+        binding.btnPostAnnouncement.setOnClickListener {
+            showAnnouncementDialog()
+        }
+
         //TÜMÜ BUTONU
         binding.btnFilterAll.setOnClickListener {
             updateButtonColors(binding.btnFilterAll)
@@ -56,6 +62,46 @@ class AdminActivity: AppCompatActivity() {
             startActivity(intent)
             finish() //GERİ TUŞUNA BASINCA ADMİN PANELİNE DÖNMESİN!!!
         }
+    }
+
+    //DUYURU PENCERESİ
+    private fun showAnnouncementDialog() {
+        val builder = AlertDialog.Builder(this)
+        builder.setTitle("Acil Duyuru Yayınla")
+        builder.setMessage("Tüm kullanıcıların ana sayfasında görünecek mesajı giriniz:")
+
+        val input = android.widget.EditText(this)
+        input.hint = "Örn: Kütüphane 17:00'da kapanacak."
+        builder.setView(input)
+
+        builder.setPositiveButton("YAYINLA") { _, _ ->
+            val message = input.text.toString().trim()
+            if (message.isNotEmpty()) {
+                saveAnnouncementToFirebase(message)
+            }
+        }
+        builder.setNegativeButton("İptal", null)
+        builder.show()
+    }
+
+    //FIREBASE KAYIT
+    private fun saveAnnouncementToFirebase(message: String) {
+        val announcement = hashMapOf(
+            "text" to message,
+            "timestamp" to com.google.firebase.Timestamp.now(), // Zaman damgası
+            "isActive" to true
+        )
+
+
+        // ID yi 'current' yaparak hep tek bir duyuru olmasını sağlıyorum
+        db.collection("announcements").document("current")
+            .set(announcement)
+            .addOnSuccessListener {
+                Toast.makeText(this, "Duyuru başarıyla yayınlandı!", Toast.LENGTH_SHORT).show()
+            }
+            .addOnFailureListener {
+                Toast.makeText(this, "Hata: ${it.localizedMessage}", Toast.LENGTH_SHORT).show()
+            }
     }
 
     private fun fetchReports(filterStatus: String) {
