@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-
-<androidx.cardview.widget.CardView
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="10dp"
+    android:layout_margin="8dp"
     app:cardCornerRadius="12dp"
     app:cardElevation="4dp">
 
@@ -18,16 +17,16 @@
             android:layout_width="match_parent"
             android:layout_height="200dp">
 
-        <ImageView
-            android:id="@+id/imgRaporGorseli"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:scaleType="centerCrop"
-            android:src="@android:drawable/ic_menu_gallery"
-            android:background="#EEEEEE" />
+            <ImageView
+                android:id="@+id/imgAdminReport"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="centerCrop"
+                android:src="@android:drawable/ic_menu_gallery"
+                android:background="#EEEEEE" />
 
             <TextView
-                android:id="@+id/tvDurum"
+                android:id="@+id/tvAdminStatus"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_margin="12dp"
@@ -49,7 +48,7 @@
             android:padding="12dp">
 
             <TextView
-                android:id="@+id/tvBaslik"
+                android:id="@+id/tvAdminTitle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Rapor Başlığı"
@@ -58,35 +57,60 @@
                 android:textColor="#000000" />
 
             <TextView
-                android:id="@+id/tvTur"
+                android:id="@+id/tvAdminType"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Kategori"
                 android:textSize="14sp"
-                android:textStyle="bold"
                 android:textColor="#1976D2"
-                android:layout_marginTop="4dp"
-                android:layout_marginBottom="8dp"/>
+                android:layout_marginTop="4dp"/>
 
             <TextView
-                android:id="@+id/tvAciklama"
+                android:id="@+id/tvAdminDesc"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Şikayet açıklaması yükleniyor..."
-                android:textSize="16sp"
+                android:text="Açıklama..."
                 android:maxLines="2"
                 android:ellipsize="end"
-                android:textColor="#000000" />
+                android:layout_marginTop="8dp"
+                android:textColor="#424242" />
 
             <TextView
-                android:id="@+id/tvTarih"
+                android:id="@+id/tvAdminUser"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Tarih"
+                android:text="gonderen@email.com"
                 android:textSize="12sp"
                 android:textColor="#757575"
                 android:layout_marginTop="8dp"/>
-
         </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:background="#F5F5F5"
+            android:padding="8dp">
+
+            <Button
+                android:id="@+id/btnAdminDelete"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="SİL"
+                android:textColor="@color/white"
+                android:backgroundTint="#D32F2F"
+                android:layout_marginEnd="8dp" />
+
+            <Button
+                android:id="@+id/btnAdminApprove"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="ÇÖZÜLDÜ"
+                android:textColor="@color/white"
+                android:backgroundTint="#388E3C" />
+        </LinearLayout>
+
     </LinearLayout>
 </androidx.cardview.widget.CardView>

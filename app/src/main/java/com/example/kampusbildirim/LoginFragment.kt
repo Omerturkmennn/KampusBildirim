@@ -40,9 +40,19 @@ class LoginFragment : Fragment() {
             if (email.isNotEmpty() && password.isNotEmpty()) {
                 auth.signInWithEmailAndPassword(email, password)
                     .addOnSuccessListener {
-                        Toast.makeText(requireContext(), "Giriş Başarılı!", Toast.LENGTH_SHORT).show()
-                        // Activity Intent yerine Fragment Navigation kullanıyoruz
-                        findNavController().navigate(R.id.action_loginFragment_to_homeFragment)
+
+                        //ADMİN GİRİŞİ
+                        if (email == "admin@gmail.com") {
+                            Toast.makeText(requireContext(), "Admin Girişi Yapıldı", Toast.LENGTH_SHORT).show()
+                            val intent = android.content.Intent(requireActivity(), AdminActivity::class.java)
+                            startActivity(intent)
+                            requireActivity().finish() //Geri dönülmesin
+                        } else {
+
+                            //NORMAL KULLANICI
+                            Toast.makeText(requireContext(), "Giriş Başarılı!", Toast.LENGTH_SHORT).show()
+                        //Activity Intent yerine Fragment Navigation kullanılıyor
+                        findNavController().navigate(R.id.action_loginFragment_to_homeFragment)}
                     }
                     .addOnFailureListener {
                         Toast.makeText(requireContext(), "Hata: ${it.localizedMessage}", Toast.LENGTH_LONG).show()

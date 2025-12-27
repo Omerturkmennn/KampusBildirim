@@ -30,6 +30,17 @@ class ReportAdapter(
 
         holder.binding.tvBaslik.text = currentReport.title
         holder.binding.tvTur.text = currentReport.type
+        holder.binding.tvAciklama.text = currentReport.description
+
+        //Durum bilgisini yaz ve renklendir
+        holder.binding.tvDurum.text = currentReport.status //"Açık" veya "Çözüldü"
+
+        if (currentReport.status == "Çözüldü") {
+            holder.binding.tvDurum.setTextColor(Color.parseColor("#388E3C")) //Yeşil
+        } else {
+            holder.binding.tvDurum.text = "Bekliyor" //
+            holder.binding.tvDurum.setTextColor(Color.parseColor("#D32F2F")) //Kırmızı
+        }
 
         //RENKLENDİRMNE
         //Gelen türe göre bir renk kodu belirler
