@@ -1,8 +1,13 @@
 package com.example.kampusbildirim
 
 import com.google.firebase.Timestamp
+import com.google.firebase.firestore.DocumentId
 
 data class Report(
+
+    @DocumentId
+    val reportId: String = "", // Belge ID si artık burada tutulacak
+
     val title: String="",
     val description: String = "",
     val type: String="",        //Tür(Arıza,Şikayet vb.)

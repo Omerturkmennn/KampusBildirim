@@ -54,6 +54,7 @@ class HomeFragment : Fragment() {
 
             //Tıklanan raporun bilgilerini Bundle içine koyuyoruz
             val bundle = Bundle()
+            bundle.putString("gonderilenId", clickedReport.reportId)
             bundle.putString("gonderilenBaslik", clickedReport.title)
             bundle.putString("gonderilenTur", clickedReport.type)
             bundle.putString("gonderilenResim", clickedReport.imageUrl)

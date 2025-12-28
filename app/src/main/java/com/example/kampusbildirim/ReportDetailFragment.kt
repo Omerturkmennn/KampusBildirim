@@ -5,6 +5,7 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import com.bumptech.glide.Glide
 import com.example.kampusbildirim.databinding.FragmentReportDetailBinding
 import com.google.android.gms.maps.CameraUpdateFactory
@@ -15,6 +16,9 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory
 
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FieldValue
+import com.google.firebase.firestore.FirebaseFirestore
 
 
 class ReportDetailFragment : Fragment(), OnMapReadyCallback {
@@ -23,12 +27,19 @@ class ReportDetailFragment : Fragment(), OnMapReadyCallback {
     private val binding get() = _binding!!
     private lateinit var mMap: GoogleMap
 
-    //Gelen verileri tutmak için değişkenler
-    private var gelenLat = 0.0
-    private var gelenLng = 0.0
-    private var gelenAciklama = ""
-    private var gelenBaslik=""
-    private var gelenTur = ""
+    private val db = FirebaseFirestore.getInstance()
+    private val auth = FirebaseAuth.getInstance()
+
+    //Veriler
+    private var reportId = ""
+    private var lat = 0.0
+    private var lng = 0.0
+    private var tur = ""
+    private var baslik = ""
+    private var aciklama = ""
+
+    //Takip Durumu
+    private var isFollowing = false
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -43,25 +54,30 @@ class ReportDetailFragment : Fragment(), OnMapReadyCallback {
 
         //PAKETİ AÇ (Argumentstan verileri al)
         arguments?.let { bundle ->
-            val gelenResimUrl = bundle.getString("gonderilenResim")
-            gelenBaslik = bundle.getString("gonderilenBaslik") ?: "Başlık Yok"
-            gelenTur = bundle.getString("gonderilenTur") ?: "Genel"
-            gelenAciklama = bundle.getString("gonderilenAciklama") ?: "Açıklama yok"
-            gelenLat = bundle.getDouble("gonderilenLat")
-            gelenLng = bundle.getDouble("gonderilenLng")
+            reportId = bundle.getString("gonderilenId") ?: ""
+            baslik = bundle.getString("gonderilenBaslik") ?: ""
+            tur = bundle.getString("gonderilenTur") ?: ""
+            aciklama = bundle.getString("gonderilenAciklama") ?: ""
+            val resimUrl = bundle.getString("gonderilenResim")
+            lat = bundle.getDouble("gonderilenLat")
+            lng = bundle.getDouble("gonderilenLng")
 
             //VERİLERİ EKRANA YERLEŞTİR
-            binding.tvDetailTitle.text = gelenBaslik
-            binding.tvDetailType.text = gelenTur
-            binding.tvDetailDescription.text = gelenAciklama
+            binding.tvDetailTitle.text = baslik
+            binding.tvDetailType.text = tur
+            binding.tvDetailDescription.text = aciklama
 
-            //Resmi Glide ile yükle
-            if (!gelenResimUrl.isNullOrEmpty()) {
-                Glide.with(requireContext())
-                    .load(gelenResimUrl)
-                    .centerCrop()
-                    .into(binding.ivDetailImage)
+            if (!resimUrl.isNullOrEmpty()) {
+                Glide.with(this).load(resimUrl).centerCrop().into(binding.ivDetailImage)
             }
+        }
+
+        //Başlangıçta takip durumunu kontrol et
+        checkIfFollowing()
+
+        //Butona Tıklama Olayı
+        binding.btnFollow.setOnClickListener {
+            toggleFollowState()
         }
 
         //HARİTAYI BAŞLAT
@@ -69,16 +85,77 @@ class ReportDetailFragment : Fragment(), OnMapReadyCallback {
         mapFragment?.getMapAsync(this)
     }
 
+    private fun checkIfFollowing() {
+        val userId = auth.currentUser?.uid ?: return
+
+        // Kullanıcının "following" listesinde bu rapor var mı?
+        db.collection("Users").document(userId).get()
+            .addOnSuccessListener { document ->
+                if (document.exists()) {
+                    val followingList = document.get("following") as? List<String>
+                    if (followingList != null && followingList.contains(reportId)) {
+                        isFollowing = true
+                        updateFollowButtonUI() // Dolu Yıldız Yap
+                    }
+                }
+            }
+    }
+
+    private fun toggleFollowState() {
+        val userId = auth.currentUser?.uid
+        if (userId == null) {
+            Toast.makeText(requireContext(), "Giriş yapmalısınız.", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        if (isFollowing) {
+            // Takipten Çık (Listeden Sil)
+            db.collection("Users").document(userId)
+                .update("following", FieldValue.arrayRemove(reportId))
+                .addOnSuccessListener {
+                    isFollowing = false
+                    updateFollowButtonUI()
+                    Toast.makeText(requireContext(), "Takipten çıkıldı.", Toast.LENGTH_SHORT).show()
+                }
+        } else {
+            // Takip Et (Listeye Ekle)
+            db.collection("Users").document(userId)
+                .update("following", FieldValue.arrayUnion(reportId))
+                .addOnSuccessListener {
+                    isFollowing = true
+                    updateFollowButtonUI()
+                    Toast.makeText(requireContext(), "Takip ediliyor!", Toast.LENGTH_SHORT).show()
+                }
+                .addOnFailureListener {
+                    // Eğer 'following' alanı hiç yoksa hata verebilir, o yüzden set ile merge yapmayı deneyebiliriz ama update genelde array oluşturur.
+                    // Garanti olsun diye Users dökümanı yoksa oluşturulmalı (zaten Register'da oluşturduk).
+                    Toast.makeText(requireContext(), "İşlem başarısız: ${it.localizedMessage}", Toast.LENGTH_SHORT).show()
+                }
+        }
+    }
+
+    private fun updateFollowButtonUI() {
+        if (isFollowing) {
+            // TAKİP EDİLİYORSA: Dolu yıldız ve SARI renk
+            binding.btnFollow.setImageResource(android.R.drawable.btn_star_big_on)
+            binding.btnFollow.setColorFilter(android.graphics.Color.parseColor("#FBC02D"))
+        } else {
+            // TAKİP EDİLMİYORSA: Boş yıldız ve GRİ renk
+            binding.btnFollow.setImageResource(android.R.drawable.btn_star_big_off)
+            binding.btnFollow.setColorFilter(android.graphics.Color.parseColor("#757575"))
+        }
+    }
+
     // Harita hazır olunca burası çalışır
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
 
         // Eğer geçerli bir konum geldiyse haritada göster
-        if (gelenLat != 0.0 && gelenLng != 0.0) {
-            val location = LatLng(gelenLat, gelenLng)
+        if (lat != 0.0 && lng != 0.0) {
+            val location = LatLng(lat, lng)
 
             // --- RENK AYARLAMA  ---
-            val markerColor = when (gelenTur) {
+            val hue = when (tur) {
                 "Arıza" -> BitmapDescriptorFactory.HUE_RED      // Kırmızı
                 "Şikayet" -> BitmapDescriptorFactory.HUE_ORANGE // Turuncu
                 "İstek" -> BitmapDescriptorFactory.HUE_BLUE     // Mavi
@@ -87,15 +164,7 @@ class ReportDetailFragment : Fragment(), OnMapReadyCallback {
                 else -> BitmapDescriptorFactory.HUE_AZURE       // Varsayılan
             }
 
-            // İğneyi dik (Renkli olarak)
-            mMap.addMarker(
-                MarkerOptions()
-                    .position(location)
-                    .title(gelenAciklama)
-                    .icon(BitmapDescriptorFactory.defaultMarker(markerColor)) //Renk burada atanıyor
-            )
-
-            //Kamerayı oraya odakla (Zoom seviyesi: 15)
+            mMap.addMarker(MarkerOptions().position(location).title(baslik).icon(BitmapDescriptorFactory.defaultMarker(hue)))
             mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(location, 15f))
         }
     }

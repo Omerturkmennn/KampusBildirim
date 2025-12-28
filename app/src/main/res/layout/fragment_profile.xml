@@ -46,18 +46,39 @@
 
     </LinearLayout>
 
-    <TextView
-        android:id="@+id/tvMyReportsTitle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="24dp"
-        android:text="Raporlarım"
-        android:textColor="#424242"
-        android:textSize="20sp"
-        android:textStyle="bold"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/linearProfileHeader" />
+    <LinearLayout
+        android:id="@+id/tabContainer"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginHorizontal="16dp"
+        android:orientation="horizontal"
+        android:weightSum="2"
+        app:layout_constraintTop_toBottomOf="@id/linearProfileHeader">
+
+        <Button
+            android:id="@+id/btnTabMyReports"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:backgroundTint="#1565C0"
+            android:text="Raporlarım"
+            android:textSize="12sp"
+            android:textColor="@color/white"
+            android:layout_marginEnd="4dp"/>
+
+        <Button
+            android:id="@+id/btnTabFollowing"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:backgroundTint="#B0BEC5"
+            android:text="Takip Ettiklerim"
+            android:textSize="12sp"
+            android:textColor="@color/black"
+            android:layout_marginStart="4dp"/>
+
+    </LinearLayout>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvMyReports"
@@ -65,7 +86,7 @@
         android:layout_height="0dp"
         android:layout_marginTop="8dp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tvMyReportsTitle"
+        app:layout_constraintTop_toBottomOf="@id/tabContainer"
         tools:listitem="@layout/item_report" />
 
     <TextView

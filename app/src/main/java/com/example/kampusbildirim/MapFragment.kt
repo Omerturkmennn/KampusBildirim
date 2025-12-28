@@ -58,6 +58,7 @@ class MapFragment : Fragment() , OnMapReadyCallback {
             if (report != null) {
                 // Detay sayfasına gitmek için paketi (bundle) hazırla
                 val bundle = Bundle()
+                bundle.putString("gonderilenId", report.reportId)
                 bundle.putString("gonderilenBaslik", report.title)
                 bundle.putString("gonderilenTur", report.type)
                 bundle.putString("gonderilenResim", report.imageUrl)
